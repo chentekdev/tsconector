@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/chentekdev/tsconector/db"
 	"github.com/chentekdev/tsconector/models"
 	"github.com/chentekdev/tsconector/utils"
 )
@@ -45,7 +46,7 @@ func Inventario() (string, bool, error) {
 		p := models.Producto{}
 		p.Codigo = respuesta.Data[i].Codigo
 		p.CodigoSat = respuesta.Data[i].CodigoSat
-		p.Costo = respuesta.Data[i].Costo
+		p.Costo = respuesta.Data[i].PrecioSugerido
 		p.Descripcion = respuesta.Data[i].Descripcion
 		p.DescripcionLarga = respuesta.Data[i].DescripcionLarga
 		p.SKU = respuesta.Data[i].SKU
@@ -54,7 +55,7 @@ func Inventario() (string, bool, error) {
 		p.Imagen = respuesta.Data[i].Imagen
 		p.Marca = respuesta.Data[i].Marca
 		p.Oversize = respuesta.Data[i].SobreDimenciones
-		p.PrecioSugerido = respuesta.Data[i].PrecioSugerido
+		p.PrecioSugerido = respuesta.Data[i].Costo * 1.16
 		p.Status = respuesta.Data[i].Status
 		p.Proveedor = "TECNOSINERGIA"
 		p.CategoriaOrigen = respuesta.Data[i].Categoria
@@ -66,5 +67,18 @@ func Inventario() (string, bool, error) {
 		p.Volumen = respuesta.Data[i].Volumen
 		inventario = append(inventario, p)
 	}
-	return fmt.Sprint("Se agregraron ", len(inventario), " productos"), true, nil
+
+	msg, exito, err := db.InventarioSincronizaAll(inventario)
+
+	if err != nil {
+		return msg, false, err
+	}
+
+	if !exito {
+		return msg, exito, err
+	}
+
+	msg2, _, _ := db.InventarioGetMarcas()
+
+	return fmt.Sprint(msg, " ", msg2), true, nil
 }

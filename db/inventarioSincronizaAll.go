@@ -40,5 +40,5 @@ func InventarioSincronizaAll(productos []models.Producto) (string, bool, error) 
 		return "Error" + err.Error(), false, err
 	}
 
-	return fmt.Sprint("Exito ", res.UpsertedCount, " registros actualizados, ", res.InsertedCount, " registros insertados"), true, nil
+	return fmt.Sprint("Exito ", res.UpsertedCount, " registros insertados, ", res.ModifiedCount, " registros actualizados"), true, nil
 }
